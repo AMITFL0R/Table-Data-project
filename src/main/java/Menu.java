@@ -10,7 +10,8 @@ import java.util.ArrayList;
 public class Menu extends JPanel {
     public static final int INITIAL_ARRAY_CAPACITY=5,BUTTON_WIDTH=150,BUTTON_HEIGHT=60,FONT_SIZE=20,BUTTON_Y=100;
 
-    private ArrayList <JButton> buttons=new ArrayList<>();
+    private ArrayList <JButton> leaguesNameButtons =new ArrayList<>();
+    private JButton chooseLocation;
     private JComboBox<Integer> location;
     private String websiteUrl;
     private String[] leagueName;
@@ -25,18 +26,27 @@ public class Menu extends JPanel {
         this.setBackground(Color.blue);
 
         for (int i = 0; i <INITIAL_ARRAY_CAPACITY ; i++) {
-            JButton button=addButton(this.leagueName[i],(i+1)*BUTTON_Y);
-            buttonListener(button,this.leagueSerial[i]);
-            this.buttons.add(button);
+            JButton button=addButton(this.leagueName[i],this.getWidth()/2-BUTTON_WIDTH/2,(i+1)*BUTTON_Y,BUTTON_WIDTH, BUTTON_HEIGHT);
+            leaguesButtonListener(button,this.leagueSerial[i]);
+            this.leaguesNameButtons.add(button);
         }
         this.setDoubleBuffered(true);
         this.setVisible(true);
 
     }
-    private void buttonListener(JButton button,String leagueSerial){
+    private void leaguesButtonListener(JButton button, String leagueSerial){
         button.addActionListener((event)->{
+
             unVisibleButton();
-            comboBox(leagueSerial);
+            this.chooseLocation=addButton("Ranking",this.getWidth()/2-BUTTON_WIDTH/2,200, BUTTON_WIDTH, BUTTON_HEIGHT);
+            this.chooseLocation.addActionListener((event1)->{
+                try {
+                    progress(this.location.getSelectedIndex(),leagueSerial);
+                } catch (IOException | InterruptedException e) {
+                    e.printStackTrace();
+                }
+            });
+                comboBox(leagueSerial);
 //            Program program=new Program(this.getX(),this.getY(),this.getWidth(),this.getHeight());
 //            this.add(program);
 //            repaint();
@@ -45,27 +55,29 @@ public class Menu extends JPanel {
             System.out.println(leagueSerial);
         });
     }
-    private void comboBox(String leagueSerial){
+    private void comboBox(String leagueSerial)  {
         int leagueSize=0;
+
         try {
             leagueSize=getLeagueSize(leagueSerial);
         } catch (IOException e) {
             e.printStackTrace();
         }
         this.location= new JComboBox<Integer>(teamsInLeague(leagueSize));
-        this.location.setBounds(100,300,40,40);
+        this.location.setBounds(200,200,50,BUTTON_HEIGHT);
         this.add(this.location);
+
     }
     private void unVisibleButton(){
-        for (int i = 0; i <this.buttons.size() ; i++) {
-            this.buttons.get(i).setVisible(false);
+        for (int i = 0; i <this.leaguesNameButtons.size() ; i++) {
+            this.leaguesNameButtons.get(i).setVisible(false);
         }
     }
 
-    private JButton addButton( String buttonText, int y) {
+    private JButton addButton( String buttonText,int x, int y,int width,int height) {
         JButton button = new JButton(buttonText);
         Font font=new Font("Ariel",Font.BOLD,FONT_SIZE);
-        button.setBounds(this.getWidth()/2-BUTTON_WIDTH/2, y, BUTTON_WIDTH, BUTTON_HEIGHT);
+        button.setBounds(x, y, width, height);
         button.setVisible(true);
         button.setFont(font);
         this.add(button);
@@ -101,4 +113,25 @@ public class Menu extends JPanel {
         }
         return teams;
     }
+    private void progress(int rank,String leagueSerial) throws IOException, InterruptedException {
+
+       Document leagueUrl=leagueSearch(leagueSerial);
+       Element table=tableSearch(leagueUrl);
+       Element team=table.child(rank);
+        String teamName=team.getElementsByClass("teamname").text();
+        String teamPoints=team.getElementsByClass("points").text();
+        System.out.println(teamName+" "+teamPoints);
+        Thread.sleep(10000);
+        this.chooseLocation.setVisible(false);
+        this.location.setVisible(false);
+        visibleButton();
+
+
+    }
+    private void visibleButton(){
+        for (int i = 0; i <this.leaguesNameButtons.size() ; i++) {
+            this.leaguesNameButtons.get(i).setVisible(true);
+        }
+    }
+
 }
