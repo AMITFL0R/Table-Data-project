@@ -13,7 +13,7 @@ public class Menu extends JPanel {
 
     private ArrayList<JButton> leaguesNameButtons = new ArrayList<>();
     private JButton chooseLocation;
-    private JComboBox<Integer> location;
+    private JComboBox<Integer> ranking;
     private String websiteUrl;
     private String[] leagueName;
     private String[] leagueSerial;
@@ -39,13 +39,10 @@ public class Menu extends JPanel {
     private void leaguesButtonListener(JButton button, String leagueSerial) {
         button.addActionListener((event) -> {
             unVisibleButton();
-
             comboBox(leagueSerial);
             this.chooseLocation = addButton("Ranking", this.getWidth() / 2 - BUTTON_WIDTH / 2, 200, BUTTON_WIDTH, BUTTON_HEIGHT);
             this.chooseLocation.addActionListener((event1) -> {
-
-                progress(this.location.getSelectedIndex(), leagueSerial);
-
+                progress(this.ranking.getSelectedIndex(), leagueSerial);
             });
 
         });
@@ -59,9 +56,9 @@ public class Menu extends JPanel {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        this.location = new JComboBox<Integer>(teamsInLeague(leagueSize));
-        this.location.setBounds(200, 200, 50, BUTTON_HEIGHT);
-        this.add(this.location);
+        this.ranking = new JComboBox<Integer>(teamsInLeague(leagueSize));
+        this.ranking.setBounds(200, 200, 50, BUTTON_HEIGHT);
+        this.add(this.ranking);
 
     }
 
@@ -139,7 +136,7 @@ public class Menu extends JPanel {
             this.leaguesNameButtons.get(i).setVisible(true);
         }
         this.chooseLocation.setVisible(false);
-        this.location.setVisible(false);
+        this.ranking.setVisible(false);
     }
 
 }
