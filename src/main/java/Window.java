@@ -6,7 +6,6 @@ public class Window extends JFrame {
 
     public static void main(String[] args) {
         Window window = new Window();
-
     }
 
     public Window() {
@@ -15,7 +14,9 @@ public class Window extends JFrame {
         this.setLocationRelativeTo(null);
         this.setResizable(false);
         this.setLayout(null);
-        this.setTitle("Table Data");
+        this.setTitle("Table Data by A.I.U.A");
+
+
         Menu menu=new Menu(START_X,START_Y,WIN_WID,WIN_HEI);
         this.add(menu);
 //        Program program =new Program(0,0,WIN_WID,WIN_HEI);

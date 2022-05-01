@@ -4,13 +4,14 @@ import org.jsoup.nodes.Element;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.Window;
 import java.io.IOException;
 import java.util.ArrayList;
 
 public class Menu extends JPanel {
     public static final int INITIAL_ARRAY_CAPACITY = 5, BUTTON_WIDTH = 150, BUTTON_HEIGHT = 60, FONT_SIZE = 20, BUTTON_Y = 100;
     public static final String LA_LIGA = "512", PREMIER_LIG = "1383", FRENCH_LIG = "29242", BUNDESLIGA = "19796", SERIA_A = "4909", ONE_WEB = "https://www.one.co.il/";
-
+    private ImageIcon backGround;
     private ArrayList<JButton> leaguesNameButtons = new ArrayList<>();
     private JButton chooseLocation;
     private JComboBox<Integer> ranking;
@@ -19,13 +20,14 @@ public class Menu extends JPanel {
     private String[] leagueSerial;
 
     public Menu(int x, int y, int width, int height) {
+
         this.leagueName = new String[]{"ליגה ספרדית", "ליגה אנגלית", "ליגה צרפתית", "ליגה גרמנית", "ליגת איטלקית"};
         this.leagueSerial = new String[]{LA_LIGA, PREMIER_LIG, FRENCH_LIG, BUNDESLIGA, SERIA_A};
         this.websiteUrl = ONE_WEB;
         this.setBounds(x, y, width, height);
         this.setLayout(null);
-        this.setBackground(Color.blue);
-
+        this.backGround = new ImageIcon("THE TABLE DATA.png");
+//        this.setBackground(Color.blue);
         for (int i = 0; i < INITIAL_ARRAY_CAPACITY; i++) {
             JButton button = addButton(this.leagueName[i], this.getWidth() / 2 - BUTTON_WIDTH / 2, (i + 1) * BUTTON_Y, BUTTON_WIDTH, BUTTON_HEIGHT);
             leaguesButtonListener(button, this.leagueSerial[i]);
@@ -33,7 +35,6 @@ public class Menu extends JPanel {
         }
         this.setDoubleBuffered(true);
         this.setVisible(true);
-
     }
 
     private void leaguesButtonListener(JButton button, String leagueSerial) {
@@ -117,7 +118,13 @@ public class Menu extends JPanel {
             Element team = table.child(rank);
             String teamName = team.getElementsByClass("teamname").text();
             String teamPoints = team.getElementsByClass("points").text();
-            System.out.println(teamName + " " + teamPoints);
+           System.out.println("  שם הקבוצה: "+teamName +"ניקוד : "+ "  " + teamPoints);
+//            JLabel resultReview=new JLabel();
+//            resultReview.setText("teamName"+"  "+"teamPoints");
+//            Font fontResult = new Font("Ariel", Font.BOLD, 50);
+//            resultReview.setBounds(100,100,200  ,100);
+//            resultReview.setFont(fontResult);
+//           this.add(resultReview);
             Thread.sleep(10000);
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
@@ -137,6 +144,11 @@ public class Menu extends JPanel {
         }
         this.chooseLocation.setVisible(false);
         this.ranking.setVisible(false);
+    }
+
+    public void paintComponent(Graphics graphics) {
+        super.paintComponent(graphics);
+        graphics.drawImage(this.backGround.getImage(), this.getX(), this.getY(), this.getWidth(), this.getHeight(), null);
     }
 
 }
