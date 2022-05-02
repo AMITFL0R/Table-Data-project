@@ -1,7 +1,6 @@
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.Window;
@@ -18,6 +17,7 @@ public class Menu extends JPanel {
     private String websiteUrl;
     private String[] leagueName;
     private String[] leagueSerial;
+    private JButton returnButton;
 
     public Menu(int x, int y, int width, int height) {
 
@@ -32,18 +32,30 @@ public class Menu extends JPanel {
             JButton button = addButton(this.leagueName[i], this.getWidth() / 2 - BUTTON_WIDTH / 2, (i + 1) * BUTTON_Y, BUTTON_WIDTH, BUTTON_HEIGHT);
             leaguesButtonListener(button, this.leagueSerial[i]);
             this.leaguesNameButtons.add(button);
+
         }
         this.setDoubleBuffered(true);
         this.setVisible(true);
     }
 
+
+
     private void leaguesButtonListener(JButton button, String leagueSerial) {
         button.addActionListener((event) -> {
             unVisibleButton();
+
             comboBox(leagueSerial);
             this.chooseLocation = addButton("Ranking", this.getWidth() / 2 - BUTTON_WIDTH / 2, 200, BUTTON_WIDTH, BUTTON_HEIGHT);
             this.chooseLocation.addActionListener((event1) -> {
+
                 progress(this.ranking.getSelectedIndex(), leagueSerial);
+
+            });
+            this.returnButton = addButton("return",750,550,100,65);
+            this.add(this.returnButton);
+            repaint();
+            this.returnButton.addActionListener((event2) -> {
+                restart();
             });
 
         });
@@ -78,6 +90,7 @@ public class Menu extends JPanel {
         this.add(button);
         return button;
     }
+
 
     private int getLeagueSize(String leagueSerial) throws IOException {
         int size = 0;
@@ -118,7 +131,7 @@ public class Menu extends JPanel {
             Element team = table.child(rank);
             String teamName = team.getElementsByClass("teamname").text();
             String teamPoints = team.getElementsByClass("points").text();
-           System.out.println("  שם הקבוצה: "+teamName +"ניקוד : "+ "  " + teamPoints);
+           System.out.println("  שם הקבוצה: "+teamName +" ניקוד: "+ " " + teamPoints);
 //            JLabel resultReview=new JLabel();
 //            resultReview.setText("teamName"+"  "+"teamPoints");
 //            Font fontResult = new Font("Ariel", Font.BOLD, 50);
@@ -127,6 +140,7 @@ public class Menu extends JPanel {
 //           this.add(resultReview);
             Thread.sleep(10000);
         } catch (IOException | InterruptedException e) {
+            progress(rank,leagueSerial);
             e.printStackTrace();
         }
         restart();
@@ -144,6 +158,7 @@ public class Menu extends JPanel {
         }
         this.chooseLocation.setVisible(false);
         this.ranking.setVisible(false);
+        this.returnButton.setVisible(false);
     }
 
     public void paintComponent(Graphics graphics) {
