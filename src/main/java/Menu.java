@@ -8,30 +8,29 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class Menu extends JPanel {
-    public static final int INITIAL_ARRAY_CAPACITY = 5, BUTTON_WIDTH = 150, BUTTON_HEIGHT = 60, FONT_SIZE = 20, BUTTON_Y = 100;
-    public static final String LA_LIGA = "512", PREMIER_LIG = "1383", FRENCH_LIG = "29242", BUNDESLIGA = "19796", SERIA_A = "4909", ONE_WEB = "https://www.one.co.il/";
+    public static final int DELAY_TIME = 4000, BUTTON_WIDTH = 150, BUTTON_HEIGHT = 60, FONT_SIZE = 20, BUTTON_Y = 100;
+    public static final String IMAGE_NAME = "THE TABLE DATA.png", ONE_WEB = "https://www.one.co.il/";
     private ImageIcon backGround;
-    private ArrayList<JButton> leaguesNameButtons = new ArrayList<>();
-    private JButton chooseLocation;
+    private ArrayList<JButton> leaguesNameButtons;
+    private ArrayList<Element> leaguesElement;
+    private ArrayList<String> leagueName;
     private JComboBox<Integer> ranking;
-    private String websiteUrl;
-    private String[] leagueName;
-    private String[] leagueSerial;
+    private JButton chooseRank;
     private JButton returnButton;
     private JLabel resultLabel;
+    private String websiteUrl;
 
 
     public Menu(int x, int y, int width, int height) {
-
-        this.leagueName = new String[]{"ליגה ספרדית", "ליגה אנגלית", "ליגה צרפתית", "ליגה גרמנית", "ליגת איטלקית"};
-        this.leagueSerial = new String[]{LA_LIGA, PREMIER_LIG, FRENCH_LIG, BUNDESLIGA, SERIA_A};
         this.websiteUrl = ONE_WEB;
+        leaguesNameButtons = new ArrayList<>();
+        initialLeague();
         this.setBounds(x, y, width, height);
         this.setLayout(null);
-        this.backGround = new ImageIcon("THE TABLE DATA.png");
-        for (int i = 0; i < this.leagueSerial.length; i++) {
-            JButton button = addButton(this.leagueName[i], this.getWidth() / 2 - BUTTON_WIDTH / 2, (i + 1) * BUTTON_Y, BUTTON_WIDTH, BUTTON_HEIGHT);
-            leaguesButtonListener(button, this.leagueSerial[i]);
+        this.backGround = new ImageIcon(IMAGE_NAME);
+        for (int i = 0; i < this.leagueName.size(); i++) {
+            JButton button = addButton(this.leagueName.get(i), this.getWidth() / 2 - BUTTON_WIDTH / 2, (i + 1) * BUTTON_Y, BUTTON_WIDTH, BUTTON_HEIGHT);
+            leaguesButtonListener(button, i);
             this.leaguesNameButtons.add(button);
 
         }
@@ -39,49 +38,60 @@ public class Menu extends JPanel {
         this.setVisible(true);
     }
 
+    private void initialLeague() {
+        try {
+            this.leaguesElement = getLeagues();
+            this.leagueName = getLeaguesName(this.leaguesElement);
+        } catch (IOException e) {
+            initialLeague();
+        }
 
-    private void leaguesButtonListener(JButton button, String leagueSerial) {
+    }
+
+
+    private void leaguesButtonListener(JButton button, int leagueIndex) {
         button.addActionListener((event) -> {
-            unVisibleButton();
-
-            comboBox(leagueSerial);
-            this.chooseLocation = addButton("Ranking", this.getWidth() / 2 - BUTTON_WIDTH / 2, 200, BUTTON_WIDTH, BUTTON_HEIGHT);
-            this.chooseLocation.addActionListener((event1) -> {
-                new Thread(()->{
+            try {
+                unVisibleButton();
+                comboBox(leagueIndex);
+                this.chooseRank = addButton("Ranking", this.getWidth() / 2 - BUTTON_WIDTH / 2, 200, BUTTON_WIDTH, BUTTON_HEIGHT);
+                chooseRankListener(leagueIndex);
+                this.returnButton = addButton("return", 750, 550, 100, 65);
+                repaint();
+                this.returnButton.addActionListener((event2) -> {
+                    restart();
                     deleteButton();
-                }).start();
-                new Thread(()->{
-                    try {
-                        progress(this.ranking.getSelectedIndex(), leagueSerial);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }).start();
-
-
-            });
-            this.returnButton = addButton("return", 750, 550, 100, 65);
-            this.add(this.returnButton);
-            repaint();
-            this.returnButton.addActionListener((event2) -> {
-                restart();
-                deleteButton();
-            });
+                });
+            } catch (IOException e) {
+                System.out.println("l");
+                leaguesButtonListener(button, leagueIndex);
+            }
 
         });
     }
 
-    private void comboBox(String leagueSerial) {
-        int leagueSize = 0;
+    private void chooseRankListener(int leagueIndex) {
+        this.chooseRank.addActionListener((event1) -> {
+            new Thread(() -> {
+                deleteButton();
+            }).start();
+            new Thread(() -> {
+                try {
+                    progress(this.ranking.getSelectedIndex(), leagueIndex);
+                } catch (Exception e) {
+                    System.out.println("p");
+                    progress(this.ranking.getSelectedIndex(), leagueIndex);
+                }
+            }).start();
 
-        try {
-            leagueSize = getLeagueSize(leagueSerial);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        this.ranking = new JComboBox<Integer>(teamsInLeague(leagueSize));
+
+        });
+    }
+
+    private void comboBox(int leagueIndex) throws IOException {
+        int leagueSize = 0;
+        leagueSize = getLeagueSize(leagueIndex);
+        this.ranking = new JComboBox<>(teamsInLeague(leagueSize));
         this.ranking.setBounds(200, 200, 50, BUTTON_HEIGHT);
         this.add(this.ranking);
 
@@ -103,19 +113,58 @@ public class Menu extends JPanel {
         return button;
     }
 
+    private ArrayList<Element> getLeagues() throws IOException {
+        Document website = Jsoup.connect(this.websiteUrl).get();
+        ArrayList<Element> allLeagues = website.getElementsByClass("one-navigation-right-container");
+        Element leagues = allLeagues.get(0);
+        ArrayList<Element> relevantLeagues = new ArrayList<>();
+        int i = 0;
+        while (!leagues.child(i).text().equals("כדורגל עולמי")) {
+            i++;
+        }
+        while (!leagues.child(i).text().equals("ליגה בלגית")) {
+            if (ignore(leagues.child(i).text())) {
+                relevantLeagues.add(leagues.child(i));
+            }
+            i++;
+        }
+        return relevantLeagues;
 
-    private int getLeagueSize(String leagueSerial) throws IOException {
+    }
+
+    private boolean ignore(String leagueName) {
+        return (!leagueName.equals("חדשות") && !leagueName.equals("ליגת האלופות")
+                && !leagueName.equals("הליגה האירופית") && !leagueName.equals("קונפרנס ליג")
+                && !leagueName.equals("כדורגל עולמי")) && !leagueName.equals("");
+    }
+
+    private ArrayList<String> getLeaguesName(ArrayList<Element> leagues) throws IOException {
+        ArrayList<String> leaguesName = new ArrayList<>();
+        for (int i = 0; i < leagues.size(); i++) {
+            leaguesName.add(leagues.get(i).text());
+        }
+        return leaguesName;
+    }
+
+
+    private int getLeagueSize(int leagueIndex) throws IOException {
         int size = 0;
-        Element table = getTable(leagueSerial);
+        Element table = getTable(leagueIndex);
         size = table.childNodeSize();
         return size;
     }
 
-    private Document leagueSearch(String leagueSerial) throws IOException {
-        Document website = Jsoup.connect(this.websiteUrl).get();
-        ArrayList<Element> leagueList = website.getElementsByClass("one-navigation-right-item one-navigation-right-item-" + leagueSerial);
-        String leagueLink = leagueList.get(0).attr("href");
-        Document leagueUrl = Jsoup.connect(this.websiteUrl + leagueLink).get();
+    private Document getLeagueUrl(int leagueIndex) {
+        String leagueLink = this.leaguesElement.get(leagueIndex).attr("href");
+        Document leagueUrl = null;
+        try {
+            leagueUrl = Jsoup.connect(this.websiteUrl + leagueLink).get();
+
+        } catch (IOException e) {
+            System.out.println("URl");
+            leagueUrl=getLeagueUrl(leagueIndex);
+        }
+
         return leagueUrl;
     }
 
@@ -128,40 +177,44 @@ public class Menu extends JPanel {
 
     private Integer[] teamsInLeague(Integer numOfTeams) {
         Integer[] teams = new Integer[numOfTeams];
-        int location = 1;
+        int rank = 1;
         for (int i = 0; i < teams.length; i++) {
-            teams[i] = location;
-            location++;
+            teams[i] = rank;
+            rank++;
 
         }
         return teams;
     }
 
-    private void progress(int rank, String leagueSerial) throws IOException, InterruptedException {
-        Element table = getTable(leagueSerial);
+    private void progress(int rank, int leagueIndex) {
+        Element table = null;
+        table = getTable(leagueIndex);
         Element team = table.child(rank);
         String teamName = team.getElementsByClass("teamname").text();
         String teamPoints = team.getElementsByClass("points").text();
         System.out.println("  שם הקבוצה: " + teamName + " ניקוד: " + " " + teamPoints);
-        this.resultLabel =addLabel(teamName+" "+teamPoints+" " +"נקודות",200,90 ,600,200);
+        this.resultLabel = addLabel(teamName + " " + teamPoints + " " + "נקודות", 200, 90, 600, 200);
 
         repaint();
-        Thread.sleep(10000);
+        try {
+            Thread.sleep(DELAY_TIME);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         restart();
     }
 
-    private Element getTable(String leagueSerial) throws IOException {
-        Document leagueUrl = leagueSearch(leagueSerial);
+    private Element getTable(int leagueIndex) {
+        Document leagueUrl = getLeagueUrl(leagueIndex);
         Element table = tableSearch(leagueUrl);
         return table;
-
     }
 
     private void restart() {
         for (int i = 0; i < this.leaguesNameButtons.size(); i++) {
             this.leaguesNameButtons.get(i).setVisible(true);
         }
-        if (this.resultLabel !=null){
+        if (this.resultLabel != null) {
             this.resultLabel.setVisible(false);
         }
 
@@ -174,15 +227,15 @@ public class Menu extends JPanel {
     }
 
     private void deleteButton() {
-        this.chooseLocation.setVisible(false);
+        this.chooseRank.setVisible(false);
         this.ranking.setVisible(false);
         this.returnButton.setVisible(false);
     }
 
-    public  JLabel addLabel(String labelText, int x, int y, int width, int height) {
+    public JLabel addLabel(String labelText, int x, int y, int width, int height) {
         JLabel label = new JLabel(labelText);
         label.setForeground(Color.black);
-        Font font=new Font("Ariel",Font.BOLD,50);
+        Font font = new Font("Ariel", Font.BOLD, 50);
         label.setFont(font);
         label.setBounds(x, y, width, height);
         this.add(label);
