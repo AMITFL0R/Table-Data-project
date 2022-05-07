@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class Menu extends JPanel {
-    public static final int DELAY_TIME = 4000,
+    public static final int DELAY_TIME = 10000,
             WIDTH_CHOOSE_BUTTON = 150,
             HEIGHT_CHOOSE_BUTTON = 60, FONT_SIZE = 20,
             Y_CHOOSE_BUTTON = 300;
@@ -30,6 +30,8 @@ public class Menu extends JPanel {
     public static final String KIND_OF_FONT = "Ariel";
     public static final int WIDTH_RANDOM_BUTTON = 150;
     public static final int HEIGHT_RANDOM_BUTTON = 60;
+
+
     private ImageIcon backGround;
     private ArrayList<JButton> leaguesNameButtons;
     private ArrayList<Element> leaguesElement;
@@ -83,6 +85,7 @@ public class Menu extends JPanel {
                     deleteButton();
                 });
             } catch (IOException e) {
+                //TODO: change print to something meaningful
                 System.out.println("l");
                 leaguesButtonListener(button, leagueIndex);
             }
@@ -99,6 +102,8 @@ public class Menu extends JPanel {
                 try {
                     progress(this.ranking.getSelectedIndex(), leagueIndex);
                 } catch (Exception e) {
+
+                    //TODO: change print to something meaningful
                     System.out.println("p");
                     progress(this.ranking.getSelectedIndex(), leagueIndex);
                 }
@@ -181,7 +186,7 @@ public class Menu extends JPanel {
             leagueUrl = Jsoup.connect(this.websiteUrl + leagueLink).get();
 
         } catch (IOException e) {
-            System.out.println("URL");
+            System.out.println("Unstable internet" + "\n" + "reloading");
             leagueUrl = getLeagueUrl(leagueIndex);
         }
 
