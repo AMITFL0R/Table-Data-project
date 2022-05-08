@@ -15,13 +15,8 @@ public class Window extends JFrame {
         this.setResizable(false);
         this.setLayout(null);
         this.setTitle("Table Data by A.I.U.A");
-
-
         Menu menu=new Menu(START_X,START_Y,WIN_WID,WIN_HEI);
         this.add(menu);
-//        Program program =new Program(0,0,WIN_WID,WIN_HEI);
-//        this.add(program);
-
         this.setVisible(true);
 
 
